@@ -66,3 +66,7 @@ canvas.gamebox {
   overflow-x: scroll;
   /* background: black; */
 }
+
+#imgSource {
+  display: none;
+}

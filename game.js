@@ -1,4 +1,4 @@
-import Bird from './js/bird.js'
+import { PngBird, SvgBird } from './js/bird.js'
 import paths from './js/birdpaths.js'
 // import {SvgPath} from 'svg-path-to-canvas'
 
@@ -11,13 +11,41 @@ window.addEventListener("DOMContentLoaded", () => {
 const canvas = document.querySelector('.gamebox');
 const ctx = canvas.getContext('2d');
 
-const player = new Bird(20);
+const player = new PngBird(20);
+const enemy = new SvgBird(.06);
 // const enemies = 
 const setupEvents = () => {
   document.addEventListener("keydown", keyDown);
 }
 
 const loadSprites = () => {
+
+  console.log(player.x)
+  const image = new Image();
+
+  image.src = document.getElementById("player-downflap").src; // 'images/red-downflap.png';
+  ctx.drawImage(image, 10, 50, player.width * 3, player.height * 3);
+
+  image.src = document.getElementById("player-upflap").src; // 'images/red-upflap.png';
+  ctx.drawImage(image, 40, 50, player.width * 3, player.height * 3);
+
+  // paths is now an array of path objects
+  // paths.forEach((path) => {
+    for (let i = 0; i < paths.length; i++) {
+    ctx.stroke(paths[i].path);
+    ctx.fillStyle = paths[i].fill;
+    ctx.scale(enemy.width, enemy.height)
+    ctx.fill(paths[i].path);
+  }
+
+
+
+
+
+
+
+
+
   // var svgElement = document.querySelector('#sprites');
   // let { width, height } = svgElement.getBBox();
   // console.log(width, height)
@@ -27,10 +55,6 @@ const loadSprites = () => {
   // blob = new Blob([outerHTML], { type: 'image/svg+xml;charset=utf-8' });
   // let URL = window.URL || window.webkitURL || window;
   // let blobURL = URL.createObjectURL(blob);
-
-  console.log('loadSprites')
-  console.log(player.x)
-  const image = new Image();
 
   // image.src = 'images/walking.png';
   // ctx.drawImage(image, 10, 10, player.width, player.height);
@@ -44,38 +68,25 @@ const loadSprites = () => {
   // ctx.stroke(path);
 
 
-  image.src = 'images/red-downflap.png';
-  ctx.drawImage(image, 50, 50, player.width, player.height);
-
-  // ctx.strokeStyle = 'red'
-  // ctx.lineWidth = 5
-  // ctx.scale(.1)
-
-  // paths is now an array of path objects
-  paths.forEach((path) => {
-    ctx.stroke(path.path);
-    ctx.fillStyle = path.fill;
-    ctx.scale(.1, .07)
-    ctx.fill(path.path);
-    
-  })
 
 
-    // // using the svg-to-canvas script
-    // const d = path.path;
-    // const sp = new SvgPath(d)
-    // const [cx, cy] = sp.center
-    // sp.save()
-    //   .beginPath()
-    //   .translate(-cx, -cy)
-    //   .rotate(45)
-    //   .scale(10)
-    //   .translate(cx, cy)
-    //   .translate(350, 350)
-    //   .strokeStyle(path.fill)
-    //   .lineWidth(3)
-    //   .to(ctx)
-    //   .stroke()
+
+
+  // // using the svg-to-canvas script
+  // const d = path.path;
+  // const sp = new SvgPath(d)
+  // const [cx, cy] = sp.center
+  // sp.save()
+  //   .beginPath()
+  //   .translate(-cx, -cy)
+  //   .rotate(45)
+  //   .scale(10)
+  //   .translate(cx, cy)
+  //   .translate(350, 350)
+  //   .strokeStyle(path.fill)
+  //   .lineWidth(3)
+  //   .to(ctx)
+  //   .stroke()
 
 
 
