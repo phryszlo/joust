@@ -1,7 +1,6 @@
 // import blue from './bluebird.js';
 
 
-
 /*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
               VARIABLES
        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
@@ -9,18 +8,18 @@
 // #region variable declarations
 const canvas = /** @type {CanvasRenderingContext2D} */ (document.getElementById("gamebox"));
 const ctx = canvas.getContext("2d");
-
-// holds the setInterval (until requestAnimationFrame is implemented)
-let drawInterval = null;
-
+// let x = canvas.width / 2;
+// let y = canvas.height - 30;
+// let velocity = {
+//   x: 2,
+//   y: -2
+// }
 const ballRadius = 10;
 const keysPressed = [];
 
-// i'm not doing drag.
 const frictionX = 0.9;
 const frictionY = 0.9;
-
-const gravity = .005;
+const gravity = 5;
 
 // KEYS CONSTANTS
 // const SPACE = ' ';
@@ -33,12 +32,15 @@ const UP = 38;
 const DOWN = 40;
 const LEFT = 37;
 const RIGHT = 39;
-
-// for future expansion
 const a = 65;
 const s = 83;
 const d = 68;
 const w = 87;
+
+let drawInterval;
+const keyEventTracker = function (e) { keysPressed[e.keyCode] = e.type == 'keydown'; }
+window.addEventListener("keydown", keyEventTracker);
+window.addEventListener("keyup", keyEventTracker);
 
 // sprite sheet frames (4x4 [0..3,0..3])
 const frameWidth = 927;
@@ -80,8 +82,6 @@ const blueCoords = {
 
 // #endregion
 
-
-// #region notes
 // gravity/drag equations (from https://burakkanber.com/blog/modeling-physics-javascript-gravity-and-drag/ &&
 // https://jsfiddle.net/bkanber/39jrM/)
 
@@ -106,9 +106,12 @@ CD is drag coefficient
 // var Fx = -0.5 * Cd * A * rho * blue.velocity.x * blue.velocity.x * blue.velocity.x / Math.abs(blue.velocity.x);
 // var Fy = -0.5 * Cd * A * rho * blue.velocity.y * blue.velocity.y * blue.velocity.y / Math.abs(blue.velocity.y);
 
-// #endregion
+
+/*
 
 
+
+*/
 /*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
             BLUE BIRD CLASS
        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
@@ -121,21 +124,21 @@ class blue {
       y: 0
     }
     this.dx = 2;
-    this.dy = 5;
+    this.dy = 2;
     this.position = {
       x: Math.random()
         * ((canvas.width - 40) - 40) + 40,
       y: Math.random()
         * ((canvas.height - 40 * .67) - 40 * .67) + 40 * .67
     }
+    // this.velocityX = 3;
+    // this.velocityY = 3;
+    // this.x = x;
+    // this.y = y;
     this.mass = 1;
-    this.initialAcceleration = {
-      x: .001,
-      y: .001
-    }
     this.acceleration = {
-      x: this.initialAcceleration.x,
-      y: this.initialAcceleration.y
+      x: 0,
+      y: 1
     }
 
     this.isFlapping = false;
@@ -147,98 +150,62 @@ class blue {
 
     // default to coords of right-facing unflapped sprite
     this.sprite = blueCoords.rt.down;
+  }
 
-     } // end constructor
-
-    updatePosition() {
-      console.log(`velocity.y = ${this.velocity.y}`);
-      this.velocity.y += this.acceleration.y;
-      this.position.y += this.velocity.y;
+  // these functions need some thought
+  moveRight() {
+    this.position.x += this.dx;
+    if (this.sprite === blueCoords.lt.up) {
+      this.sprite = blueCoords.rt.up;
     }
-
-    draw() {
-      ctx.drawImage(
-      this.image,
-      this.sprite.col * frameWidth,
-      this.sprite.row * frameHeight,
-      frameWidth,
-      frameHeight,
-      this.position.x,
-      this.position.y,
-      this.width,
-      this.height
-    );
-
-    if (this.position.y < canvas.height - this.height) {
-      this.acceleration.y += gravity;
-      this.updatePosition();
+    else if (this.sprite === blueCoords.lt.down) {
+      this.sprite = blueCoords.rt.down;
     }
-    else {
-      this.velocity.y = 0;
-      this.acceleration.y = this.initialAcceleration.y;
+  }
+  moveLeft() {
+    this.position.x -= this.dx;
+    if (this.sprite === blueCoords.rt.up) {
+      this.sprite = blueCoords.lt.up;
     }
+    else if (this.sprite === blueCoords.rt.down) {
+      this.sprite = blueCoords.lt.down;
     }
+  }
+  moveUp() {
+    this.position.y -= this.dy;
+  }
+  moveDown() {
+    this.position.y += this.dy;
+  }
 
-    // these functions need some thought
-    moveRight() {
-      this.position.x += this.dx;
-      if (this.sprite === blueCoords.lt.up) {
+  flap(flap) {
+    this.isFlapping = flap ? true : false;
+    console.log(`this.sprite = ${this.sprite.row}, ${this.sprite.col}`);
+
+    if (flap) {
+      if (this.sprite === blueCoords.lt.down || this.sprite === blueCoords.lt.up) {
+        this.sprite = blueCoords.lt.up;
+      }
+      else if (this.sprite === blueCoords.rt.down || this.sprite === blueCoords.rt.up) {
         this.sprite = blueCoords.rt.up;
       }
-      else if (this.sprite === blueCoords.lt.down) {
+
+    } else {
+      // it would help if I could figure out a way to just look for blueCoords.lt/rt (no up/down ||s)
+      if (
+        (this.sprite === blueCoords.lt.up || this.sprite === blueCoords.lt.down)
+      ) {
+        this.sprite = blueCoords.lt.down;
+      }
+      else if (
+        (this.sprite === blueCoords.rt.up || this.sprite === blueCoords.rt.down)
+      ) {
         this.sprite = blueCoords.rt.down;
       }
     }
-    moveLeft() {
-      this.position.x -= this.dx;
-      if (this.sprite === blueCoords.rt.up) {
-        this.sprite = blueCoords.lt.up;
-      }
-      else if (this.sprite === blueCoords.rt.down) {
-        this.sprite = blueCoords.lt.down;
-      }
-    }
-    moveUp() {
-      this.acceleration.y = this.initialAcceleration.y;
-      this.velocity.y -= this.acceleration.y;
-      this.position.y -= this.dy;
-    }
-    moveDown() {
-      this.position.y += this.dy;
-    }
-
-    flap(flap) {
-      this.isFlapping = flap ? true : false;
-      console.log(`this.sprite = ${this.sprite.row}, ${this.sprite.col}`);
-
-      if (flap) {
-        if (this.sprite === blueCoords.lt.down || this.sprite === blueCoords.lt.up) {
-          this.sprite = blueCoords.lt.up;
-        }
-        else if (this.sprite === blueCoords.rt.down || this.sprite === blueCoords.rt.up) {
-          this.sprite = blueCoords.rt.up;
-        }
-
-      } else {
-        // it would help if I could figure out a way to just look for blueCoords.lt/rt (no up/down ||s)
-        if (
-          (this.sprite === blueCoords.lt.up || this.sprite === blueCoords.lt.down)
-        ) {
-          this.sprite = blueCoords.lt.down;
-        }
-        else if (
-          (this.sprite === blueCoords.rt.up || this.sprite === blueCoords.rt.down)
-        ) {
-          this.sprite = blueCoords.rt.down;
-        }
-      }
-
-
-      console.log(`this.sprite = ${this.sprite.row}, ${this.sprite.col}`);
-    }
-
-
+    console.log(`this.sprite = ${this.sprite.row}, ${this.sprite.col}`);
   }
+}
 
 // #endregion
 
@@ -388,23 +355,67 @@ const drawBall = () => {
 
 // #endregion
 
+// just for testing
+// const drawblue = () => {
+//   row = blues[0].isFlapping ? 1 : 0;
+//   column = blues[0].isFlapping ? 3 : 0;
+
+//   // this does the pixel sheet row/column image switching
+//   ctx.drawImage(
+//     blues[0].image,
+//     column * frameWidth,
+//     row * frameHeight,
+//     frameWidth,
+//     frameHeight,
+//     blues[0].x,
+//     blues[0].y,
+//     blues[0].width,
+//     blues[0].height
+//   );
+// }
+
+
 /*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
           ANIMATION FUNCTIONS
        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
 //  #region animation functions
 const drawBlues = () => {
   blues.forEach((blue) => {
-    blue.draw();
-  }) // end foreach
-  trackKeyStates();
+    console.log(`blue.sprite = ${blue.sprite.row}, ${blue.sprite.col}`);
+
+    // blue.sprite.col/row * frameWidth/Height: chooses the sprite from the sheet
+    ctx.drawImage(
+      blue.image,
+      blue.sprite.col * frameWidth,
+      blue.sprite.row * frameHeight,
+      frameWidth,
+      frameHeight,
+      blue.position.x,
+      blue.position.y,
+      blue.width,
+      blue.height
+    );
+
+    // uncomment to make birds move around and bounce off walls
+    // console.log(`${blue.position}..${blue.velocity}`)
+
+    // if (blue.position.x + blue.velocity.x > canvas.width - blue.width || blue.position.x + blue.velocity.x < 0) {
+    //   blue.velocity.x = -blue.velocity.x;
+    // }
+    // if (blue.position.y + blue.velocity.y > canvas.height - blue.height || blue.position.y + blue.velocity.y < 0) {
+    //   blue.velocity.y = -blue.velocity.y;
+    // }
+
+    // blue.position.x += blue.velocity.x;
+    // blue.position.y += blue.velocity.y;
+  })
+  updateBluePositions();
+
 
 }
 
-/*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-           TRACK KEY STATES
-       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
-// #region trackKeyStates
-const trackKeyStates = () => {
+// update positions
+const updateBluePositions = () => {
   if (keysPressed[UP]) {
     blues.forEach((blue) => {
       if (blue.position.y > 0) {
@@ -441,6 +452,13 @@ const trackKeyStates = () => {
       if (!blue.isFlapping) {
         blue.flap(true);
       }
+      // if (blue.sprite === blueCoords.lt.down || blue.sprite === blueCoords.lt.up ) {
+      //   blue.sprite = blueCoords.lt.up;
+      //   // blue.x += blue.velocity.x;
+      // }
+      // else if (blue.sprite === blueCoords.rt.down || blue.sprite === blueCoords.rt.up) {
+      //   blue.sprite = blueCoords.rt.up;
+      // }
     })
   }
   else {
@@ -448,6 +466,15 @@ const trackKeyStates = () => {
       if (blue.isFlapping) {
         blue.flap(false);
       }
+
+      // it would help if I could figure out a way to just look for blueCoords.lt/rt (no up/down ||s)
+      // if (blue.sprite === blueCoords.lt.up || blue.sprite === blueCoords.lt.down) {
+      //   blue.sprite = blueCoords.lt.down;
+      //   blue.x += blue.velocity.x;
+      // }
+      // else if (blue.sprite === blueCoords.rt.up || blue.sprite === blueCoords.rt.down) {
+      //   blue.sprite = blueCoords.rt.down;
+      // }
     })
 
   }
@@ -457,7 +484,7 @@ const trackKeyStates = () => {
 
 
 /*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-      ANIMATION SetINTERVAL LOOP
+            INTERVAL LOOP
        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
 const draw = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
