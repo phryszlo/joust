@@ -32,7 +32,7 @@ canvas {
 .control {
   border-radius: 9px;
   padding: 5px;
-  width: 80px;
+  width: 40vw;
   margin: auto;
   font-weight: bold;
 }
@@ -66,7 +66,6 @@ canvas {
   background-color: blue;
   color: white;
   font-size: 11px;
-  width: 120px;
 }
 
 .add-blue:hover {
@@ -78,13 +77,13 @@ canvas {
 }
 
 .dev-controls {
-  display: flex;
   width: 60vw;
-  justify-content: center;
   margin: 1em auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .remove-blues{
-  width: fit-content;
   font-size: 11px;
   background-color: lemonchiffon;
   color: teal;

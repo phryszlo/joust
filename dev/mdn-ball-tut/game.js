@@ -1,3 +1,6 @@
+import blue from './bluebird.js';
+
+
 /*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
               VARIABLES
        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
@@ -11,6 +14,10 @@ let dx = 2;
 let dy = -2;
 const ballRadius = 10;
 const keysPressed = [];
+
+const frictionX = 0.9;
+const frictionY = 0.9;
+const gravity = 5;
 
 // KEYS CONSTANTS
 // const SPACE = ' ';
@@ -156,56 +163,20 @@ const allBluesSlowDown = () => {
 const keyDown = (e) => {
   console.log(e.keyCode);
   keysPressed[e.keyCode] = true;
+
   if (e.keyCode === SPACE) {
     console.log('space')
     blues.forEach((blue) => {
-      console.log(blue.x )
-      blue.flap(true);
+      console.log(blue.x)
+      // blue.flap(true);
     })
   }
-  if (e.keyCode === RIGHT) {
-    blues.forEach((blue) => {
-      if (blue.sprite === blueCoords.lt.up) {
-        blue.sprite = blueCoords.rt.up;
-        blue.x += blue.dx;
-      }
-      else if (blue.sprite === blueCoords.lt.down) {
-        blue.sprite = blueCoords.rt.down;
-      }
-      // else {
-      //   blue.x += blue.dx;
-      // }
-    })
-  }
-  if (e.keyCode === LEFT) {
-      blues.forEach((blue) => {
-        if (blue.sprite === blueCoords.rt.up) {
-          blue.sprite = blueCoords.lt.up;
-          blue.x += blue.dx;
-        }
-        else if (blue.sprite === blueCoords.rt.down) {
-          blue.sprite = blueCoords.lt.down;
-        }
-        // else {
-        //   blue.x -= blue.dx;
-        // }
-      })
-  }
-  // if (e.keyCode === UP) {
-  //   blues.forEach((blue) => {
-  //     blue.y -= blue.dy;
-  //   })
-  // }
-  // if (e.keyCode === DOWN) {
-  //   blues.forEach((blue) => {
-  //     blue.y += blue.dy;
-  //   })
-  // }
 }
 
 const keyUp = (e) => {
   keysPressed[e.keyCode] = false;
-  if (e.key === SPACE) {
+  if (e.keyCode === SPACE) {
+    console.log('space up');
     blues.forEach((blue) => {
       blue.flap(false);
     })
@@ -251,52 +222,6 @@ const drawBall = () => {
 
 // #endregion
 
-/*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-            BLUE BIRD CLASS
-       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
-//  #region blue bird class
-class blue {
-  constructor(width = 40,
-    speed = 40 * .67,
-    x = Math.random()
-      * ((canvas.width - 40) - 40) + 40,
-    y = Math.random()
-      * ((canvas.height - 40 * .67) - 40 * .67) + 40 * .67) {
-    this.width = width;
-    this.speed = speed;
-    this.x = x;
-    this.y = y;
-  }
-
-  // default to coords of right-facing unflapped sprite
-  sprite = blueCoords.rt.down;
-
-  // these functions need some thought
-  speedUp() {
-    this.speed++;
-  }
-  slowDown() {
-    this.speed--;
-  }
-  flap(flap) {
-    this.isFlapping = flap ? true : false;
-  }
-
-  isFlapping = false;
-
-  // blueSprites is the whole sprite sheet
-  image = blueSprites;
-  width = 40;
-  height = this.width * .67;
-  x = canvas.width / 3;
-  y = Math.random() * canvas.height;
-  speed = 1.5;
-  dx = this.speed;
-  dy = this.speed * 1.5;
-}
-
-// #endregion
-
 // just for testing
 // const drawblue = () => {
 //   row = blues[0].isFlapping ? 1 : 0;
@@ -322,7 +247,8 @@ class blue {
        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
 //  #region animation functions
 const drawBlues = () => {
-  blues.forEach((blue, idx) => {
+  blues.forEach((blue) => {
+    console.log(`blue.sprite = ${blue.sprite.row}, ${blue.sprite.col}`);
 
     // blue.sprite.col/row * frameWidth/Height: chooses the sprite from the sheet
     ctx.drawImage(
@@ -340,51 +266,61 @@ const drawBlues = () => {
   updateBluePositions();
 }
 
+// update positions
 const updateBluePositions = () => {
   if (keysPressed[UP]) {
     blues.forEach((blue) => {
-      blue.y -= blue.dy;
+      blue.moveUp();
     })
   }
   if (keysPressed[DOWN]) {
     blues.forEach((blue) => {
-      blue.y += blue.dy;
+      blue.moveDown();
     })
   }
   if (keysPressed[LEFT]) {
     blues.forEach((blue) => {
-      blue.x -= blue.dx;
+
+      // blue.x -= blue.dx;
+      blue.moveLeft();
     })
   }
   if (keysPressed[RIGHT]) {
     blues.forEach((blue) => {
-      blue.x += blue.dx;
+      blues.forEach((blue) => {
+        blue.moveRight();
+      })
     })
   }
 
-  // space gets an else. not sure i need to handle space in here
   if (keysPressed[SPACE]) {
     blues.forEach((blue) => {
-      blue.flap(true);
-      if (blue.sprite === blueCoords.lt.down) {
-        blue.sprite = blueCoords.lt.up;
-        blue.x += blue.dx;
+      if (!blue.isFlapping) {
+        blue.flap(true);
       }
-      else if (blue.sprite === blueCoords.rt.down) {
-        blue.sprite = blueCoords.rt.up;
-      }
+      // if (blue.sprite === blueCoords.lt.down || blue.sprite === blueCoords.lt.up ) {
+      //   blue.sprite = blueCoords.lt.up;
+      //   // blue.x += blue.dx;
+      // }
+      // else if (blue.sprite === blueCoords.rt.down || blue.sprite === blueCoords.rt.up) {
+      //   blue.sprite = blueCoords.rt.up;
+      // }
     })
   }
   else {
     blues.forEach((blue) => {
-      blue.flap(false);
-      if (blue.sprite === blueCoords.lt.up) {
-        blue.sprite = blueCoords.lt.down;
-        blue.x += blue.dx;
+      if (blue.isFlapping) {
+        blue.flap(false);
       }
-      else if (blue.sprite === blueCoords.rt.up) {
-        blue.sprite = blueCoords.rt.down;
-      }
+
+      // it would help if I could figure out a way to just look for blueCoords.lt/rt (no up/down ||s)
+      // if (blue.sprite === blueCoords.lt.up || blue.sprite === blueCoords.lt.down) {
+      //   blue.sprite = blueCoords.lt.down;
+      //   blue.x += blue.dx;
+      // }
+      // else if (blue.sprite === blueCoords.rt.up || blue.sprite === blueCoords.rt.down) {
+      //   blue.sprite = blueCoords.rt.down;
+      // }
     })
 
   }
@@ -394,7 +330,7 @@ const updateBluePositions = () => {
 
 
 /*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-            ANIMATION LOOP
+            INTERVAL LOOP
        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
 const draw = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
