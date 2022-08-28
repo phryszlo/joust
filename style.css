@@ -1,7 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 body {
-  /* background: #656; */
+  background: #333;
+  /* width: 4500px; */
   margin: 0;
 }
 .head {
@@ -58,9 +59,18 @@ body {
   margin: 1em;
   /* border: 4px solid red; */
 }
-canvas.gamebox {
-  width: 90vw;
-  height: calc(90vw * .67);
+
+.game-div .non-canvas {
+  width: 95vw;
+  height: calc(95vw * .67);
+  border: 4px outset bisque;
+}
+
+
+.geme-div .gamebox {
+  display: none;
+  width: 95vw;
+  height: calc(95vw * .67);
   border: 8px inset blue;
   padding: 5px;
   overflow-x: scroll;

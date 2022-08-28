@@ -1,0 +1,33 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+canvas {
+  background: #eee;
+  display: block;
+  margin: 20px auto;
+}
+
+.sprite-store {
+  display: none;
+}
+
+.stop-interval {
+  background-color: red;
+  border-radius: 9px;
+  padding: 5px;
+  width: 50px;
+  margin: auto;
+}
+.stop-interval:hover {
+  background-color: aqua;
+}
+.stop-interval:active {
+  background-color: gold;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

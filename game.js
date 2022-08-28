@@ -1,6 +1,5 @@
 import { PngBird, SvgBird } from './js/bird.js'
 import paths from './js/birdpaths.js'
-// import {SvgPath} from 'svg-path-to-canvas'
 
 window.addEventListener("DOMContentLoaded", () => {
   setupEvents();
@@ -27,11 +26,12 @@ const loadSprites = () => {
   ctx.drawImage(image, 10, 50, player.width * 3, player.height * 3);
 
   image.src = document.getElementById("player-upflap").src; // 'images/red-upflap.png';
-  ctx.drawImage(image, 40, 50, player.width * 3, player.height * 3);
+  ctx.drawImage(image, 80, 50, player.width * 3, player.height * 3);
 
   // paths is now an array of path objects
   // paths.forEach((path) => {
     for (let i = 0; i < paths.length; i++) {
+      console.log(paths[i])
     ctx.stroke(paths[i].path);
     ctx.fillStyle = paths[i].fill;
     ctx.scale(enemy.width, enemy.height)
