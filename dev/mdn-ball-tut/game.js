@@ -1,56 +1,222 @@
+/*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+              VARIABLES
+       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
+
+// #region variable declarations
 const canvas = /** @type {CanvasRenderingContext2D} */ (document.getElementById("gamebox"));
 const ctx = canvas.getContext("2d");
 let x = canvas.width / 2;
 let y = canvas.height - 30;
 let dx = 2;
 let dy = -2;
-// sprite sheet frames (4x2)
+const ballRadius = 10;
+const keysPressed = [];
+
+// KEYS CONSTANTS
+// const SPACE = ' ';
+// const UP = 'ArrowUp';
+// const DOWN = 'ArrowDown';
+// const LEFT = 'ArrowLeft';
+// const RIGHT = 'ArrowRight';
+const SPACE = 32;
+const UP = 38;
+const DOWN = 40;
+const LEFT = 37;
+const RIGHT = 39;
+const a = 65;
+const s = 83;
+const d = 68;
+const w = 87;
+
+let drawInterval;
+const keyEventTracker = function (e) { keysPressed[e.keyCode] = e.type == 'keydown'; }
+window.addEventListener("keydown", keyEventTracker);
+window.addEventListener("keyup", keyEventTracker);
+
+// sprite sheet frames (4x4 [0..3,0..3])
 const frameWidth = 927;
 const frameHeight = 633;
+const blueCoords = {
+  lt: {
+    up: {
+      row: 3,
+      col: 3
+    },
+    down: {
+      row: 2,
+      col: 0
+    }
+  },
+  rt: {
+    up: {
+      row: 1,
+      col: 0
+    },
+    down: {
+      row: 0,
+      col: 3
+    }
+  }
+}
 let row = 2;
 let column = 4;
 
-let blueIsFlapping = false;
+// html elements
 const blueSprites = document.querySelector(".blue-sprites");
 const blueUpflap = document.querySelector(".blue-upflap");
 const blueDownflap = document.querySelector(".blue-downflap");
-// const blueSprites = [blueDownflap.src, blueUpflap.src];
-const ballRadius = 10;
 
+const stopBtn = document.querySelector('.stop-interval');
+const startBtn = document.querySelector('.start-interval');
+const addBlueBtn = document.querySelector('.add-blue');
+const removeBluesBtn = document.querySelector('.remove-blues');
+
+// #endregion
+
+/*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+            LOAD EVENT
+       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
+//  #region load event
 window.addEventListener('load', () => {
-  blue.image = new Image();
-  blue.image.src = blueSprites.src;
-  document.querySelector('.stop-interval').addEventListener('click', stopIntervalClick);
-  document.querySelector('.switch-sprite').addEventListener('click', switchSprite );
-  document.addEventListener('keydown', keyDown );
-  document.addEventListener('keyup', keyUp );
-})
+  // blue.image = new Image();
+  // blue.image.src = blueSprites.src;
+  stopBtn.addEventListener('click', stopInterval);
+  startBtn.addEventListener('click', startInterval);
+  addBlueBtn.addEventListener('click', () => {
+    addBlue();
+  });
+  removeBluesBtn.addEventListener('click', removeBlues);
+  document.addEventListener('keydown', keyDown);
+  document.addEventListener('keyup', keyUp);
 
+  // REMOVE FOR BUTTON PUSH START
+  startInterval();
+})
+// #endregion
+
+/*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+           CONTROLS HANDLERS
+       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
+//  #region controls handlers
+const stopInterval = (e) => {
+  clearInterval(drawInterval);
+  stopBtn.blur();
+}
+
+const startInterval = () => {
+  drawInterval = setInterval(draw, 20);
+  startBtn.blur();
+}
+
+const blues = [];
+
+const removeBlues = (e) => {
+  console.log('remove blues')
+  blues.splice(1);
+  removeBluesBtn.blur();
+}
+
+const addBlue = () => {
+  console.log(blues.length)
+  blues.push(new blue());
+  addBlueBtn.blur();
+}
+
+// #endregion
+
+/*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+            SPRITE ACTIONS
+       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
+//  #region sprite actions
+
+// flapSprite wants a boolean argument
+// const flapSprite = (flap) => {
+//   blueIsFlapping = flap ? true : false;
+// }
+
+const allBluesSpeedUp = () => {
+  blues.forEach(blue => {
+    blue.speedUp();
+  })
+}
+const allBluesSlowDown = () => {
+  blues.forEach(blue => {
+    blue.slowDown();
+  })
+}
+
+
+
+// #endregion
+
+/*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+             KEY HANDLERS
+       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
+//  #region key handlers
 const keyDown = (e) => {
-  if (e.key === ' ') {
-    flapSprite(true);
+  console.log(e.keyCode);
+  keysPressed[e.keyCode] = true;
+  if (e.keyCode === SPACE) {
+    console.log('space')
+    blues.forEach((blue) => {
+      console.log(blue.x )
+      blue.flap(true);
+    })
   }
+  if (e.keyCode === RIGHT) {
+    blues.forEach((blue) => {
+      if (blue.sprite === blueCoords.lt.up) {
+        blue.sprite = blueCoords.rt.up;
+        blue.x += blue.dx;
+      }
+      else if (blue.sprite === blueCoords.lt.down) {
+        blue.sprite = blueCoords.rt.down;
+      }
+      // else {
+      //   blue.x += blue.dx;
+      // }
+    })
+  }
+  if (e.keyCode === LEFT) {
+      blues.forEach((blue) => {
+        if (blue.sprite === blueCoords.rt.up) {
+          blue.sprite = blueCoords.lt.up;
+          blue.x += blue.dx;
+        }
+        else if (blue.sprite === blueCoords.rt.down) {
+          blue.sprite = blueCoords.lt.down;
+        }
+        // else {
+        //   blue.x -= blue.dx;
+        // }
+      })
+  }
+  // if (e.keyCode === UP) {
+  //   blues.forEach((blue) => {
+  //     blue.y -= blue.dy;
+  //   })
+  // }
+  // if (e.keyCode === DOWN) {
+  //   blues.forEach((blue) => {
+  //     blue.y += blue.dy;
+  //   })
+  // }
 }
 
 const keyUp = (e) => {
-  if (e.key === ' ') {
-    flapSprite(false);
+  keysPressed[e.keyCode] = false;
+  if (e.key === SPACE) {
+    blues.forEach((blue) => {
+      blue.flap(false);
+    })
   }
 }
+// #endregion
 
-// flapSprite wants a boolean argument
-const flapSprite = (flap) => {
-  blueIsFlapping = flap ? true : false;
-}
-
-const switchSprite = (e) => {
-  blueIsFlapping = !blueIsFlapping;
-}
-const stopIntervalClick = (e) => {
-  console.log(e.target);
-  clearInterval(drawInterval);
-}
-
+/*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+       OBJECT DRAWING FUNCTIONS
+       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
+//#region object drawing functions
 const drawSquare = () => {
   ctx.beginPath();
   ctx.rect(20, 40, 50, 50);
@@ -75,16 +241,6 @@ const drawOpenRect = () => {
   ctx.closePath();
 }
 
-const blue = {
-  image: blueSprites,
-  width: 40,
-  height: 40 * .67,
-  x: canvas.width / 3,
-  y: Math.random() * canvas.height,
-  dx: 1.5,
-  dy: -2
-}
-
 const drawBall = () => {
   ctx.beginPath();
   ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
@@ -93,24 +249,163 @@ const drawBall = () => {
   ctx.closePath();
 }
 
-const drawblue = () => {
-  row = blueIsFlapping ? 1 : 0;
-  column = blueIsFlapping ? 3 : 0;
-  ctx.drawImage(blue.image, column * frameWidth, row * frameHeight, frameWidth, frameHeight, blue.x, blue.y, blue.width, blue.height);
-  // ctx.drawImage(blue.image, blue.x, blue.y, 40, 40 * .67);
+// #endregion
+
+/*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+            BLUE BIRD CLASS
+       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
+//  #region blue bird class
+class blue {
+  constructor(width = 40,
+    speed = 40 * .67,
+    x = Math.random()
+      * ((canvas.width - 40) - 40) + 40,
+    y = Math.random()
+      * ((canvas.height - 40 * .67) - 40 * .67) + 40 * .67) {
+    this.width = width;
+    this.speed = speed;
+    this.x = x;
+    this.y = y;
+  }
+
+  // default to coords of right-facing unflapped sprite
+  sprite = blueCoords.rt.down;
+
+  // these functions need some thought
+  speedUp() {
+    this.speed++;
+  }
+  slowDown() {
+    this.speed--;
+  }
+  flap(flap) {
+    this.isFlapping = flap ? true : false;
+  }
+
+  isFlapping = false;
+
+  // blueSprites is the whole sprite sheet
+  image = blueSprites;
+  width = 40;
+  height = this.width * .67;
+  x = canvas.width / 3;
+  y = Math.random() * canvas.height;
+  speed = 1.5;
+  dx = this.speed;
+  dy = this.speed * 1.5;
 }
 
+// #endregion
 
-  /*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-              ANIMATION LOOP
-          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */   
+// just for testing
+// const drawblue = () => {
+//   row = blues[0].isFlapping ? 1 : 0;
+//   column = blues[0].isFlapping ? 3 : 0;
+
+//   // this does the pixel sheet row/column image switching
+//   ctx.drawImage(
+//     blues[0].image,
+//     column * frameWidth,
+//     row * frameHeight,
+//     frameWidth,
+//     frameHeight,
+//     blues[0].x,
+//     blues[0].y,
+//     blues[0].width,
+//     blues[0].height
+//   );
+// }
+
+
+/*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+          ANIMATION FUNCTIONS
+       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
+//  #region animation functions
+const drawBlues = () => {
+  blues.forEach((blue, idx) => {
+
+    // blue.sprite.col/row * frameWidth/Height: chooses the sprite from the sheet
+    ctx.drawImage(
+      blue.image,
+      blue.sprite.col * frameWidth,
+      blue.sprite.row * frameHeight,
+      frameWidth,
+      frameHeight,
+      blue.x,
+      blue.y,
+      blue.width,
+      blue.height
+    );
+  })
+  updateBluePositions();
+}
+
+const updateBluePositions = () => {
+  if (keysPressed[UP]) {
+    blues.forEach((blue) => {
+      blue.y -= blue.dy;
+    })
+  }
+  if (keysPressed[DOWN]) {
+    blues.forEach((blue) => {
+      blue.y += blue.dy;
+    })
+  }
+  if (keysPressed[LEFT]) {
+    blues.forEach((blue) => {
+      blue.x -= blue.dx;
+    })
+  }
+  if (keysPressed[RIGHT]) {
+    blues.forEach((blue) => {
+      blue.x += blue.dx;
+    })
+  }
+
+  // space gets an else. not sure i need to handle space in here
+  if (keysPressed[SPACE]) {
+    blues.forEach((blue) => {
+      blue.flap(true);
+      if (blue.sprite === blueCoords.lt.down) {
+        blue.sprite = blueCoords.lt.up;
+        blue.x += blue.dx;
+      }
+      else if (blue.sprite === blueCoords.rt.down) {
+        blue.sprite = blueCoords.rt.up;
+      }
+    })
+  }
+  else {
+    blues.forEach((blue) => {
+      blue.flap(false);
+      if (blue.sprite === blueCoords.lt.up) {
+        blue.sprite = blueCoords.lt.down;
+        blue.x += blue.dx;
+      }
+      else if (blue.sprite === blueCoords.rt.up) {
+        blue.sprite = blueCoords.rt.down;
+      }
+    })
+
+  }
+}
+
+// #endregion
+
+
+/*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+            ANIMATION LOOP
+       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
 const draw = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBall();
   drawGreenBall();
   drawSquare();
   drawOpenRect();
-  drawblue();
+  drawBlues();
+  // if (blues.length > 0) {
+  //   drawblue();
+  // }
   if (y + dy > canvas.height || y + dy < 0) {
     dy = -dy;
   }
@@ -119,7 +414,7 @@ const draw = () => {
   }
   if (blue.x + blue.dx > canvas.width - blue.width || blue.x + blue.dx < 0) {
     blue.dx = -blue.dx;
-   }
+  }
   if (blue.y + blue.dy > canvas.height - blue.height || blue.y + blue.dy < 0) {
     blue.dy = -blue.dy;
   }
@@ -129,4 +424,4 @@ const draw = () => {
   blue.x += blue.dx;
   blue.y += blue.dy;
 }
-const drawInterval = setInterval(draw, 20);
+// drawInterval = setInterval(draw, 20);

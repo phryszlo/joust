@@ -1,7 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 * {
   padding: 0;
   margin: 0;
+  font-family: 'Press Start 2P', monospace;
+
 }
+
+body {
+  margin: 0;
+}
+
 canvas {
   background: #eee;
   display: block;
@@ -12,22 +21,80 @@ canvas {
   display: none;
 }
 
-.stop-interval {
-  background-color: red;
+.controls {
+  width: 60vw;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.control {
   border-radius: 9px;
   padding: 5px;
-  width: 50px;
+  width: 80px;
   margin: auto;
+  font-weight: bold;
 }
+
+.stop-interval {
+  background-color: red;
+}
+
 .stop-interval:hover {
   background-color: aqua;
 }
+
 .stop-interval:active {
   background-color: gold;
 }
 
-.controls {
+.start-interval {
+  background-color: limegreen;
+  color: deeppink;
+}
+
+.start-interval:hover {
+  background-color: aqua;
+}
+
+.start-interval:active {
+  background-color: gold;
+}
+
+.add-blue {
+  background-color: blue;
+  color: white;
+  font-size: 11px;
+  width: 120px;
+}
+
+.add-blue:hover {
+  background-color: deeppink;
+}
+
+.add-blue:active {
+  background-color: lemonchiffon;
+}
+
+.dev-controls {
   display: flex;
+  width: 60vw;
   justify-content: center;
-  align-items: center;
+  margin: 1em auto;
+}
+.remove-blues{
+  width: fit-content;
+  font-size: 11px;
+  background-color: lemonchiffon;
+  color: teal;
+}
+.remove-blues:hover {
+  background-color: olivedrab;
+  color: brown;
+}
+.remove-blues:active {
+  background-color: peru;
+  color: deeppink;
+  
 }

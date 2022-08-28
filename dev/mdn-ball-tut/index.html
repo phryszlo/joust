@@ -10,13 +10,17 @@
   <body>
     <canvas id="gamebox" width="480" height="320"></canvas>
     <div class="controls">
-      <button class="stop-interval">STOP!</button>
-      <button class="switch-sprite">switch</button>
+      <button class="control stop-interval">STOP!</button>
+      <button class="control start-interval">GO!</button>
+    </div>
+    <div class="dev-controls">
+      <button class="control add-blue">blues++</button>        
+      <button class="control remove-blues">blues.splice(1)</button>        
     </div>
     <div class="sprite-store">
       <img src="frame-8v.png" alt="" class="blue-downflap" />
       <img src="frame-1v.png" alt="" class="blue-upflap" />
-      <img src="bluebird-sprites-lt.png" alt="" class="blue-sprites" />
+      <img src="bluebird-sprites-all.png" alt="" class="blue-sprites" />
     </div>
     <script src="game.js"></script>
   </body>
