@@ -8,10 +8,12 @@
 // #region variable declarations
 const canvas = /** @type {CanvasRenderingContext2D} */ (document.getElementById("gamebox"));
 const ctx = canvas.getContext("2d");
-let x = canvas.width / 2;
-let y = canvas.height - 30;
-let dx = 2;
-let dy = -2;
+// let x = canvas.width / 2;
+// let y = canvas.height - 30;
+// let velocity = {
+//   x: 2,
+//   y: -2
+// }
 const ballRadius = 10;
 const keysPressed = [];
 
@@ -80,32 +82,67 @@ const blueCoords = {
 
 // #endregion
 
+// gravity/drag equations (from https://burakkanber.com/blog/modeling-physics-javascript-gravity-and-drag/ &&
+// https://jsfiddle.net/bkanber/39jrM/)
 
+// drag
+/*
+
+CD is drag coefficient
+ρ = 1.22 (kg / m3) = the density of air
+-0.5 is negative because the force pushes Against
+    FD = -0.5 * CD * A * ρ * v2
+    ||
+    FD, x = -0.5 * CD * A * ρ * vx2
+    FD, y = -0.5 * CD * A * ρ * vy2
+*/
+
+// ag is accel. due to gravity 
+
+// var Cd = 0.47;  // Dimensionless
+// var rho = 1.22; // kg / m^3
+// var A = Math.PI * blue.radius * blue.radius / (10000); // m^2
+// var ag = 9.81;  // m / s^2
+// var Fx = -0.5 * Cd * A * rho * blue.velocity.x * blue.velocity.x * blue.velocity.x / Math.abs(blue.velocity.x);
+// var Fy = -0.5 * Cd * A * rho * blue.velocity.y * blue.velocity.y * blue.velocity.y / Math.abs(blue.velocity.y);
 
 /*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
             BLUE BIRD CLASS
        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
 //  #region blue bird class
 class blue {
-  constructor(width = 40,
-    x = Math.random()
-      * ((canvas.width - 40) - 40) + 40,
-    y = Math.random()
-      * ((canvas.height - 40 * .67) - 40 * .67) + 40 * .67) {
-    this.width = width;
-    this.velocityX = 3;
-    this.velocityY = 3;
-    this.x = x;
-    this.y = y;
+  constructor() {
+    this.width = 40;
+    this.velocity = {
+      x: 3,
+      y: 3
+    }
+    this.position = {
+      x: Math.random()
+        * ((canvas.width - 40) - 40) + 40,
+      y: Math.random()
+        * ((canvas.height - 40 * .67) - 40 * .67) + 40 * .67
+    }
+    // this.velocityX = 3;
+    // this.velocityY = 3;
+    // this.x = x;
+    // this.y = y;
+    this.mass = 1;
 
+    this.isFlapping = false;
+
+    // blueSprites is the whole sprite sheet
+    this.image = blueSprites;
+    this.width = 40;
+    this.height = this.width * .67;
+
+    // default to coords of right-facing unflapped sprite
+    this.sprite = blueCoords.rt.down;
   }
-
-  // default to coords of right-facing unflapped sprite
-  sprite = blueCoords.rt.down;
 
   // these functions need some thought
   moveRight() {
-    this.x += this.velocityX;
+    this.position.x += this.velocity.x;
     if (this.sprite === blueCoords.lt.up) {
       this.sprite = blueCoords.rt.up;
     }
@@ -114,7 +151,7 @@ class blue {
     }
   }
   moveLeft() {
-    this.x -= this.velocityX;
+    this.position.x -= this.velocity.x;
     if (this.sprite === blueCoords.rt.up) {
       this.sprite = blueCoords.lt.up;
     }
@@ -123,10 +160,10 @@ class blue {
     }
   }
   moveUp() {
-    this.y -= this.velocityY;
+    this.position.y -= this.velocity.y;
   }
   moveDown() {
-    this.y += this.velocityY;
+    this.position.y += this.velocity.y;
   }
 
   flap(flap) {
@@ -156,17 +193,6 @@ class blue {
     }
     console.log(`this.sprite = ${this.sprite.row}, ${this.sprite.col}`);
   }
-
-  isFlapping = false;
-
-  // blueSprites is the whole sprite sheet
-  image = blueSprites;
-  width = 40;
-  height = this.width * .67;
-  x = canvas.width / 3;
-  y = Math.random() * canvas.height;
-  dx = this.velocityX;
-  dy = this.velocityY;
 }
 
 // #endregion
@@ -262,7 +288,7 @@ const keyDown = (e) => {
   if (e.keyCode === SPACE) {
     console.log('space')
     blues.forEach((blue) => {
-      console.log(blue.x)
+      console.log(blue.position.x)
       // blue.flap(true);
     })
   }
@@ -352,13 +378,28 @@ const drawBlues = () => {
       blue.sprite.row * frameHeight,
       frameWidth,
       frameHeight,
-      blue.x,
-      blue.y,
+      blue.position.x,
+      blue.position.y,
       blue.width,
       blue.height
     );
+
+    // uncomment to make birds move around and bounce off walls
+    // console.log(`${blue.position}..${blue.velocity}`)
+
+    // if (blue.position.x + blue.velocity.x > canvas.width - blue.width || blue.position.x + blue.velocity.x < 0) {
+    //   blue.velocity.x = -blue.velocity.x;
+    // }
+    // if (blue.position.y + blue.velocity.y > canvas.height - blue.height || blue.position.y + blue.velocity.y < 0) {
+    //   blue.velocity.y = -blue.velocity.y;
+    // }
+
+    // blue.position.x += blue.velocity.x;
+    // blue.position.y += blue.velocity.y;
   })
   updateBluePositions();
+
+
 }
 
 // update positions
@@ -376,7 +417,7 @@ const updateBluePositions = () => {
   if (keysPressed[LEFT]) {
     blues.forEach((blue) => {
 
-      // blue.x -= blue.dx;
+      // blue.x -= blue.velocity.x;
       blue.moveLeft();
     })
   }
@@ -395,7 +436,7 @@ const updateBluePositions = () => {
       }
       // if (blue.sprite === blueCoords.lt.down || blue.sprite === blueCoords.lt.up ) {
       //   blue.sprite = blueCoords.lt.up;
-      //   // blue.x += blue.dx;
+      //   // blue.x += blue.velocity.x;
       // }
       // else if (blue.sprite === blueCoords.rt.down || blue.sprite === blueCoords.rt.up) {
       //   blue.sprite = blueCoords.rt.up;
@@ -411,7 +452,7 @@ const updateBluePositions = () => {
       // it would help if I could figure out a way to just look for blueCoords.lt/rt (no up/down ||s)
       // if (blue.sprite === blueCoords.lt.up || blue.sprite === blueCoords.lt.down) {
       //   blue.sprite = blueCoords.lt.down;
-      //   blue.x += blue.dx;
+      //   blue.x += blue.velocity.x;
       // }
       // else if (blue.sprite === blueCoords.rt.up || blue.sprite === blueCoords.rt.down) {
       //   blue.sprite = blueCoords.rt.down;
@@ -429,30 +470,11 @@ const updateBluePositions = () => {
        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
 const draw = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawBall();
-  drawGreenBall();
-  drawSquare();
-  drawOpenRect();
-  drawBlues();
-  // if (blues.length > 0) {
-  //   drawblue();
-  // }
-  if (y + dy > canvas.height || y + dy < 0) {
-    dy = -dy;
-  }
-  if (x + dx > canvas.width || x + dx < 0) {
-    dx = -dx;
-  }
-  if (blue.x + blue.dx > canvas.width - blue.width || blue.x + blue.dx < 0) {
-    blue.dx = -blue.dx;
-  }
-  if (blue.y + blue.dy > canvas.height - blue.height || blue.y + blue.dy < 0) {
-    blue.dy = -blue.dy;
-  }
 
-  x += dx;
-  y += dy;
-  blue.x += blue.dx;
-  blue.y += blue.dy;
+  if (blues.length > 0) {
+    drawBlues();
+
+
+  }
 }
 // drawInterval = setInterval(draw, 20);
