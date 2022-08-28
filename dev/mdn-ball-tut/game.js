@@ -106,6 +106,12 @@ CD is drag coefficient
 // var Fx = -0.5 * Cd * A * rho * blue.velocity.x * blue.velocity.x * blue.velocity.x / Math.abs(blue.velocity.x);
 // var Fy = -0.5 * Cd * A * rho * blue.velocity.y * blue.velocity.y * blue.velocity.y / Math.abs(blue.velocity.y);
 
+
+/*
+
+
+
+*/
 /*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
             BLUE BIRD CLASS
        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
@@ -114,9 +120,11 @@ class blue {
   constructor() {
     this.width = 40;
     this.velocity = {
-      x: 3,
-      y: 3
+      x: 0,
+      y: 0
     }
+    this.dx = 2;
+    this.dy = 2;
     this.position = {
       x: Math.random()
         * ((canvas.width - 40) - 40) + 40,
@@ -128,6 +136,10 @@ class blue {
     // this.x = x;
     // this.y = y;
     this.mass = 1;
+    this.acceleration = {
+      x: 0,
+      y: 1
+    }
 
     this.isFlapping = false;
 
@@ -142,7 +154,7 @@ class blue {
 
   // these functions need some thought
   moveRight() {
-    this.position.x += this.velocity.x;
+    this.position.x += this.dx;
     if (this.sprite === blueCoords.lt.up) {
       this.sprite = blueCoords.rt.up;
     }
@@ -151,7 +163,7 @@ class blue {
     }
   }
   moveLeft() {
-    this.position.x -= this.velocity.x;
+    this.position.x -= this.dx;
     if (this.sprite === blueCoords.rt.up) {
       this.sprite = blueCoords.lt.up;
     }
@@ -160,10 +172,10 @@ class blue {
     }
   }
   moveUp() {
-    this.position.y -= this.velocity.y;
+    this.position.y -= this.dy;
   }
   moveDown() {
-    this.position.y += this.velocity.y;
+    this.position.y += this.dy;
   }
 
   flap(flap) {
@@ -406,25 +418,31 @@ const drawBlues = () => {
 const updateBluePositions = () => {
   if (keysPressed[UP]) {
     blues.forEach((blue) => {
-      blue.moveUp();
+      if (blue.position.y > 0) {
+        blue.moveUp();
+      }
     })
   }
   if (keysPressed[DOWN]) {
     blues.forEach((blue) => {
-      blue.moveDown();
+      if (blue.position.y < canvas.height - blue.height) {
+        blue.moveDown();
+      }
     })
   }
   if (keysPressed[LEFT]) {
     blues.forEach((blue) => {
-
-      // blue.x -= blue.velocity.x;
-      blue.moveLeft();
+      if (blue.position.x > 0) {
+        blue.moveLeft();
+      }
     })
   }
   if (keysPressed[RIGHT]) {
     blues.forEach((blue) => {
       blues.forEach((blue) => {
-        blue.moveRight();
+        if (blue.position.x < canvas.width - blue.width) {
+          blue.moveRight();
+        }
       })
     })
   }
@@ -474,7 +492,16 @@ const draw = () => {
   if (blues.length > 0) {
     drawBlues();
 
-
   }
 }
+
+const animate = () => {
+  requestAnimationFrame(animate);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (blues.length > 0) {
+    drawBlues();
+  }
+}
+
 // drawInterval = setInterval(draw, 20);
