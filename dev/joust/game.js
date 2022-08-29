@@ -22,6 +22,7 @@ const frictionY = 0.9;
 const gravity = .008;
 
 let deaths = 0;
+let maxDeaths = 3;
 let score = 0;
 
 
@@ -57,6 +58,8 @@ const killRedBtn = document.querySelector('.kill-red');
 
 const scoreDisplay = document.querySelector('.score');
 const deathsDisplay = document.querySelector('.deaths');
+
+const gameOverImage = document.querySelector('.game-over');
 
 
 const blueCoords = {
@@ -143,6 +146,7 @@ class Blue {
   constructor() {
     this.isColliding = false;
     this.dead = false;
+    this.invulnerable = false;
     this.width = 40;
     this.dx = 4;
     this.dy = 5;
@@ -196,7 +200,9 @@ class Blue {
     if (this.dead) {
       // reds.push(new Red());
       setTimeout(() => {
-        this.dead = false;
+        blues.splice(0);
+        blues.push(new Blue);
+        // this.dead = false;
       }, 2000);
       return;
     }
@@ -211,11 +217,22 @@ class Blue {
         this.isColliding = true;
         // position needs to be LESS THAN theirs (higher = less on this grid)
         console.log(`red.position.y = ${red.position.y}   blue.position.y = ${this.position.y}`);
-        if (this.position.y - this.height < red.position.y && this.isColliding) {
-          console.log('we win');
-        }
-        else {
-          console.log('we lose');
+        if (!this.invulnerable) {
+          if (this.position.y - this.height < red.position.y && this.isColliding) {
+            console.log('we win');
+            red.die();
+            score += 1000;
+            this.invulnerable = true;
+            setTimeout(() => {
+
+              // give it two seconds so we don't start auto-dying
+              this.invulnerable = false;
+            }, 4000);
+          }
+          else {
+            console.log('we lose');
+            this.die();
+          }
         }
         // stopInterval(); 
         this.isColliding = false;
@@ -331,13 +348,13 @@ class Blue {
 class Red {
   constructor() {
     this.dead = false;
+    this.ignore = false;
     this.isColliding = false;
     this.width = 60;
     this.dx = 4;
     this.dy = 5;
     this.position = {
-      x: Math.random()
-        * ((canvas.width - 40) - 40) + 40,
+      x: canvas.width + this.width,
       y: Math.random()
         * ((canvas.height - 40 * .67) - 40 * .67) + 40 * .67
     }
@@ -377,14 +394,21 @@ class Red {
   updatePosition() {
     this.velocity.y += this.acceleration.y;
     this.position.y += this.velocity.y;
+
+    this.position.x -= this.velocity.x;
   }
 
   draw() {
     if (this.dead) {
       // reds.push(new Red());
-      setTimeout(() => {
-        this.dead = false;
-      }, 2000);
+      // setTimeout(() => {
+        // this.dead = false;
+      // }, 2000);
+      if (this.position.x < 0) {
+        this.width = 0;
+        this.height = 0;
+        this.ignore = true;
+      }
       return;
     }
     ctx.drawImage(
@@ -508,10 +532,12 @@ window.addEventListener('load', () => {
     })
     reds.splice(1);
     blues.splice(1);
+    killRedBtn.blur();
   });
   addBlueBtn.addEventListener('click', () => {
     addRed();
     // addBlue();
+    addBlueBtn.blur();
   });
   removeBluesBtn.addEventListener('click', removeBlues);
   document.addEventListener('keydown', keyDown);
@@ -628,6 +654,13 @@ const drawBlues = () => {
 
 const drawReds = () => {
   reds.forEach((red) => {
+
+    // I mean, why not here?
+    if (red.position.x < 0 && !red.ignore) {
+
+      setTimeout(() => { reds.push(new Red())}, 2000 );
+    }
+
     red.draw();
   }) // end foreach
   // trackKeyStates();
@@ -695,11 +728,18 @@ const trackKeyStates = () => {
 let frameCount = 0;
 const drawLoop = () => {
 
+  // update scores
   deathsDisplay.innerHTML = deaths;
+  scoreDisplay.innerHTML = score;
 
-
+  
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  if (deaths >= maxDeaths) {
+    ctx.drawImage(gameOverImage, 0, 0, canvas.width, canvas.height);
+    stopInterval();
 
+  }
   if (blues.length > 0) {
     drawBlues();
   }
