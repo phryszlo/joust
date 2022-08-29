@@ -519,7 +519,7 @@ window.addEventListener('load', () => {
   });
   addBlueBtn.addEventListener('click', () => {
     addRed();
-    addBlue();
+    // addBlue();
     addBlueBtn.blur();
   });
   removeBluesBtn.addEventListener('click', removeBlues);
@@ -528,6 +528,8 @@ window.addEventListener('load', () => {
 
   addBlue();
   addRed();
+  addRed(  );
+
 
   // REMOVE FOR BUTTON PUSH START
   startInterval();
