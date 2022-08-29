@@ -561,7 +561,7 @@ const stopInterval = () => {
 }
 
 const startInterval = () => {
-  drawInterval = setInterval(drawLoop, 20);
+  drawInterval = setInterval(drawLoop, 40);
   startBtn.blur();
 }
 

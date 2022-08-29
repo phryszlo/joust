@@ -1,3 +1,0 @@
-**JOUST**
-*The Birdfight*
-
