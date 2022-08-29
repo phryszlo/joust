@@ -38,9 +38,9 @@ body {
 
 .flap-drive {
   margin-top: .5em;
-  color: rgb(173, 77, 128);
+  color: orange;
   font-size: 16px;
-  text-shadow: rgb(20, 255, 47) 2px 2px;
+  text-shadow: yellow 2px 2px;
   margin-bottom: .2em;
 }
 
@@ -53,7 +53,7 @@ body {
 
 .based-on {
   text-align: center;
-  color: #aaaa;
+  color: #aaaf;
 }
 
 .joust {
@@ -78,21 +78,25 @@ canvas {
 }
 
 .controls {
-  width: 60vw;
-  margin: 0 auto;
+  position: absolute;
+  top: 30vh;
+  left: 10px;
+  width: 110px;
+  /* margin: 0 auto; */
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .control {
   border-radius: 9px;
   padding: 5px;
-  width: 40vw;
-  margin: auto;
+  width: 110px;
+  /* margin: auto; */
   font-weight: bold;
   font-size: 11px;
-
+  opacity: .6;
 }
 
 .stop-interval {
@@ -117,6 +121,18 @@ canvas {
 }
 
 .start-interval:active {
+  background-color: gold;
+}
+.start-over {
+  background-color: black;
+  color: deeppink;
+}
+
+.start-over:hover {
+  background-color: aqua;
+}
+
+.start-over:active {
   background-color: gold;
 }
 
@@ -155,5 +171,4 @@ canvas {
 .remove-blues:active {
   background-color: peru;
   color: deeppink;
-
 }

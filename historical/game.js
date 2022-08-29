@@ -13,12 +13,6 @@ const ctx = canvas.getContext("2d");
 // holds the setInterval (until requestAnimationFrame is implemented)
 let drawInterval = null;
 
-// desperation variables
-let redCount = 0;
-let blueCount = 0;
-let lastRedCount = 0;
-let lastBlueCount = 0;
-
 const keysPressed = [];
 
 // i'm not doing drag.
@@ -28,7 +22,6 @@ const frictionY = 0.9;
 const gravity = .008;
 
 let deaths = 0;
-let maxDeaths = 3;
 let score = 0;
 
 
@@ -58,7 +51,6 @@ const redSprites = document.querySelector(".red-sprites");
 
 const stopBtn = document.querySelector('.stop-interval');
 const startBtn = document.querySelector('.start-interval');
-const startOverBtn = document.querySelector('.start-over');
 const addBlueBtn = document.querySelector('.add-blue');
 const removeBluesBtn = document.querySelector('.remove-blues');
 const killRedBtn = document.querySelector('.wipe-out');
@@ -66,11 +58,7 @@ const killRedBtn = document.querySelector('.wipe-out');
 const scoreDisplay = document.querySelector('.score');
 const deathsDisplay = document.querySelector('.deaths');
 
-const gameOverImage = document.querySelector('.game-over');
-const backgroundImage = document.querySelector('.background1');
 
-
-// blue/red Coords are the locations in the sprite sheets.
 const blueCoords = {
   lt: {
     up: {
@@ -119,6 +107,34 @@ const redCoords = {
 // #endregion
 
 
+// #region notes
+// gravity/drag equations (from https://burakkanber.com/blog/modeling-physics-javascript-gravity-and-drag/ &&
+// https://jsfiddle.net/bkanber/39jrM/)
+
+// drag
+/*
+
+CD is drag coefficient
+ρ = 1.22 (kg / m3) = the density of air
+-0.5 is negative because the force pushes Against
+    FD = -0.5 * CD * A * ρ * v2
+    ||
+    FD, x = -0.5 * CD * A * ρ * vx2
+    FD, y = -0.5 * CD * A * ρ * vy2
+*/
+
+// ag is accel. due to gravity 
+
+// var Cd = 0.47;  // Dimensionless
+// var rho = 1.22; // kg / m^3
+// var A = Math.PI * blue.radius * blue.radius / (10000); // m^2
+// var ag = 9.81;  // m / s^2
+// var Fx = -0.5 * Cd * A * rho * blue.velocity.x * blue.velocity.x * blue.velocity.x / Math.abs(blue.velocity.x);
+// var Fy = -0.5 * Cd * A * rho * blue.velocity.y * blue.velocity.y * blue.velocity.y / Math.abs(blue.velocity.y);
+
+// #endregion
+
+
 /*     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
             BLUE BIRD CLASS
        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀      */
@@ -127,7 +143,6 @@ class Blue {
   constructor() {
     this.isColliding = false;
     this.dead = false;
-    this.invulnerable = false;
     this.width = 40;
     this.dx = 4;
     this.dy = 5;
@@ -179,10 +194,9 @@ class Blue {
 
   draw() {
     if (this.dead) {
+      // reds.push(new Red());
       setTimeout(() => {
-        blues.splice(0);
-        addBlue();
-        // this.dead = false;
+        this.dead = false;
       }, 2000);
       return;
     }
@@ -197,22 +211,11 @@ class Blue {
         this.isColliding = true;
         // position needs to be LESS THAN theirs (higher = less on this grid)
         console.log(`red.position.y = ${red.position.y}   blue.position.y = ${this.position.y}`);
-        if (!this.invulnerable) {
-          if (this.position.y - this.height < red.position.y && this.isColliding) {
-            console.log('we win');
-            red.die();
-            score += 1000;
-            this.invulnerable = true;
-            setTimeout(() => {
-
-              // give it two seconds so we don't start auto-dying
-              this.invulnerable = false;
-            }, 4000);
-          }
-          else {
-            console.log('we lose');
-            this.die();
-          }
+        if (this.position.y - this.height < red.position.y && this.isColliding) {
+          console.log('we win');
+        }
+        else {
+          console.log('we lose');
         }
         // stopInterval(); 
         this.isColliding = false;
@@ -328,13 +331,13 @@ class Blue {
 class Red {
   constructor() {
     this.dead = false;
-    this.ignore = false;
     this.isColliding = false;
     this.width = 60;
     this.dx = 4;
     this.dy = 5;
     this.position = {
-      x: canvas.width + this.width,
+      x: Math.random()
+        * ((canvas.width - 40) - 40) + 40,
       y: Math.random()
         * ((canvas.height - 40 * .67) - 40 * .67) + 40 * .67
     }
@@ -374,21 +377,14 @@ class Red {
   updatePosition() {
     this.velocity.y += this.acceleration.y;
     this.position.y += this.velocity.y;
-
-    this.position.x -= this.velocity.x;
   }
 
   draw() {
     if (this.dead) {
+      // reds.push(new Red());
       setTimeout(() => {
-        addRed();
-        // this.dead = false;
-      }, 1000);
-      if (this.position.x < 0) {
-        this.width = 0;
-        this.height = 0;
-        this.ignore = true;
-      }
+        this.dead = false;
+      }, 2000);
       return;
     }
     ctx.drawImage(
@@ -503,9 +499,6 @@ window.addEventListener('load', () => {
   // blue.image.src = blueSprites.src;
   stopBtn.addEventListener('click', stopInterval);
   startBtn.addEventListener('click', startInterval);
-  startOverBtn.addEventListener('click', () => {
-    window.location.reload();
-  })
   killRedBtn.addEventListener('click', () => {
     reds.forEach((red) => {
       red.die();
@@ -515,12 +508,10 @@ window.addEventListener('load', () => {
     })
     reds.splice(1);
     blues.splice(1);
-    killRedBtn.blur();
   });
   addBlueBtn.addEventListener('click', () => {
     addRed();
-    addBlue();
-    addBlueBtn.blur();
+    // addBlue();
   });
   removeBluesBtn.addEventListener('click', removeBlues);
   document.addEventListener('keydown', keyDown);
@@ -544,7 +535,7 @@ const stopInterval = () => {
 }
 
 const startInterval = () => {
-  drawInterval = setInterval(drawLoop, 15);
+  drawInterval = setInterval(drawLoop, 20);
   startBtn.blur();
 }
 
@@ -556,12 +547,7 @@ const removeBlues = (e) => {
   removeBluesBtn.blur();
 }
 const addBlue = () => {
-  if (blueCount <= lastBlueCount + 1) {
-    blues.push(new Blue());
-  }
-  lastBlueCount = blueCount;
-  blueCount++;
-
+  blues.push(new Blue());
   addBlueBtn.blur();
 }
 
@@ -571,13 +557,8 @@ const removeReds = (e) => {
   // removeRedsBtn.blur();
 }
 const addRed = () => {
-  if (redCount <= lastRedCount + 1) {
-    reds.push(new Red());
-  }
-  lastRedCount = redCount;
-  redCount++;
-  addBlueBtn.blur();
-
+  reds.push(new Red());
+  // addRedBtn.blur();
 }
 
 // #endregion
@@ -647,13 +628,6 @@ const drawBlues = () => {
 
 const drawReds = () => {
   reds.forEach((red) => {
-
-    // I mean, why not here?
-    if (red.position.x < 0 && !red.ignore) {
-
-      setTimeout(() => { addRed() }, 2000);
-    }
-
     red.draw();
   }) // end foreach
   // trackKeyStates();
@@ -721,19 +695,11 @@ const trackKeyStates = () => {
 let frameCount = 0;
 const drawLoop = () => {
 
-  // update scores
   deathsDisplay.innerHTML = deaths;
-  scoreDisplay.innerHTML = score;
 
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
-  if (deaths >= maxDeaths) {
-    ctx.drawImage(gameOverImage, 0, 0, canvas.width, canvas.height);
-    stopInterval();
-
-  }
   if (blues.length > 0) {
     drawBlues();
   }
@@ -755,42 +721,13 @@ const drawLoop = () => {
   }
 }
 
-const animate = () => {
-  // requestAnimationFrame(animate);
+// const animate = () => {
+//   requestAnimationFrame(animate);
+//   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // // update scores
-  // deathsDisplay.innerHTML = deaths;
-  // scoreDisplay.innerHTML = score;
-
-
-  // ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // ctx.drawImage(backgroundImage, 0, 0, canvas.width,canvas.height);
-
-  // if (deaths >= maxDeaths) {
-  //   ctx.drawImage(gameOverImage, 0, 0, canvas.width, canvas.height);
-  //   stopInterval();
-
-  // }
-  // if (blues.length > 0) {
-  //   drawBlues();
-  // }
-  // if (reds.length > 0) {
-  //   drawReds();
-  // }
-
-  // // autoflap the reds
-  // frameCount += 1;
-  // if (frameCount % 30 === 0) {
-  //   reds.forEach((red) => {
-  //     red.flap(true);
-  //   })
-  // }
-  // else if (frameCount % 15 === 0) {
-  //   reds.forEach((red) => {
-  //     red.flap(false);
-  //   })
-  // }
-}
-// animate();
+//   if (blues.length > 0) {
+//     drawBlues();
+//   }
+// }
 
 // drawInterval = setInterval(draw, 20);
