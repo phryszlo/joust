@@ -18,8 +18,8 @@ const blueDownflap = document.querySelector(".blue-downflap");
 const ballRadius = 10;
 
 window.addEventListener('load', () => {
-  blue.image = new Image();
-  blue.image.src = blueSprites.src;
+  Blue.image = new Image();
+  Blue.image.src = blueSprites.src;
   document.querySelector('.stop-interval').addEventListener('click', stopIntervalClick);
   //  document.querySelector('.switch-sprite').addEventListener('click', switchSprite );
   document.addEventListener('keydown', keyDown );
@@ -97,7 +97,7 @@ const drawBall = () => {
 const drawblue = () => {
   row = blueIsFlapping ? 1 : 0;
   column = blueIsFlapping ? 3 : 0;
-  ctx.drawImage(blue.image, column * frameWidth, row * frameHeight, frameWidth, frameHeight, blue.x, blue.y, blue.width, blue.height);
+  ctx.drawImage(Blue.image, column * frameWidth, row * frameHeight, frameWidth, frameHeight, Blue.x, Blue.y, Blue.width, Blue.height);
   // ctx.drawImage(blue.image, blue.x, blue.y, 40, 40 * .67);
 }
 
@@ -118,16 +118,16 @@ const draw = () => {
   if (x + dx > canvas.width || x + dx < 0) {
     dx = -dx;
   }
-  if (blue.x + blue.dx > canvas.width - blue.width || blue.x + blue.dx < 0) {
-    blue.dx = -blue.dx;
+  if (Blue.x + Blue.dx > canvas.width - Blue.width || Blue.x + Blue.dx < 0) {
+    Blue.dx = -Blue.dx;
    }
-  if (blue.y + blue.dy > canvas.height - blue.height || blue.y + blue.dy < 0) {
-    blue.dy = -blue.dy;
+  if (Blue.y + Blue.dy > canvas.height - Blue.height || Blue.y + Blue.dy < 0) {
+    Blue.dy = -Blue.dy;
   }
 
   x += dx;
   y += dy;
-  blue.x += blue.dx;
-  blue.y += blue.dy;
+  Blue.x += Blue.dx;
+  Blue.y += Blue.dy;
 }
-const drawInterval = setInterval(draw, 20);
+const drawInterval = setInterval(drawLoop, 20);

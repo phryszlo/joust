@@ -9,13 +9,69 @@
 
 body {
   margin: 0;
+  background-color: #333;
+  overflow: hidden;
+}
+
+.score-div {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  top: 10px;
+  left: 10px;
+  font-size: 20px;
+  color: yellow;
+}
+.score-label, .deaths-label {
+  color:rgb(173, 77, 128);
+}
+.score {
+  margin-bottom: 20px;
+}
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.flap-drive {
+  margin-top: .5em;
+  color: rgb(173, 77, 128);
+  font-size: 16px;
+  text-shadow: rgb(20, 255, 47) 2px 2px;
+  margin-bottom: .2em;
+}
+
+.based-on-joust {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  font-size: 12px;
+}
+
+.based-on {
+  text-align: center;
+  color: #aaaa;
+}
+
+.joust {
+  height: 20px;
+  width: 70px;
+  margin: .4em 1em 0 1em;
 }
 
 canvas {
   background: #eee;
   display: block;
-  margin: 20px auto;
+  width: 70vw;
+  height: calc(60vw * .62);
+  margin: 20px auto 40px auto;
+  border: 2px solid crimson;
+  box-shadow: 15px 15px 15px 15px, -15px -15px 15px 15px black;
 }
+
 
 .sprite-store {
   display: none;
@@ -35,6 +91,8 @@ canvas {
   width: 40vw;
   margin: auto;
   font-weight: bold;
+  font-size: 11px;
+
 }
 
 .stop-interval {
@@ -65,7 +123,6 @@ canvas {
 .add-blue {
   background-color: blue;
   color: white;
-  font-size: 11px;
 }
 
 .add-blue:hover {
@@ -78,22 +135,25 @@ canvas {
 
 .dev-controls {
   width: 60vw;
-  margin: 1em auto;
+  margin: .1em auto;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.remove-blues{
+
+.remove-blues {
   font-size: 11px;
   background-color: lemonchiffon;
   color: teal;
 }
+
 .remove-blues:hover {
   background-color: olivedrab;
   color: brown;
 }
+
 .remove-blues:active {
   background-color: peru;
   color: deeppink;
-  
+
 }
